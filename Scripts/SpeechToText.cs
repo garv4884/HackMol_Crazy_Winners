@@ -14,7 +14,6 @@ public class SpeechToText : MonoBehaviour
     public AudioSource audio_source;
     private string microphonename;
     private string apikey;
-    // private string convoai_apikey = "5b6eea40c46047a7f7669c9843890367";
 
     public string answer = "";
 
