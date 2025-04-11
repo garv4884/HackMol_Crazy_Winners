@@ -40,3 +40,37 @@ class AIChat(APIView):
             return Response({"response" : text})
         else:
             return Response({"response", response.text}, status = response.status_code)
+
+class EvaluateInterview(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        contents = request.data.get("contents", [])
+        if not contents:
+            return Response({"error": "Conversation history is required"}, status=400)
+
+        # Add system message to guide AI personality
+        system_instruction = {
+            "role": "user",
+            "parts": [{
+                "text": "Evaluate the entire interview based on this conversation. Provide insights on strengths, weaknesses, and possible improvements. Format the output like this: Strengths: ..., Weaknesses: ..., Suggestions: ..."
+            }]
+        }
+        contents.append(system_instruction)
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key={API_KEY}"
+        headers = {"Content-Type": "application/json"}
+
+        payload = {"contents": contents}
+
+        response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code == 200:
+            try:
+                text = response.json()['candidates'][0]['content']['parts'][0]['text']
+            except:
+                text = "Unexpected response structure."
+            return Response({"response": text})
+        else:
+            return Response({"error": response.text}, status=response.status_code)
+
